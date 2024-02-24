@@ -1,0 +1,4 @@
+Logic for highlighting legal squares:
+    - Store piece + x,y in memory
+    - Calculate legal squares for piece
+    - Highlight legal squares
