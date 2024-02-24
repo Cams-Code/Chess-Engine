@@ -93,23 +93,23 @@ class GameState():
         return legal_moves
 
     def wB(self,selected_piece):
-        legal_moves = self.bishop_move(selected_piece)
+        legal_moves = self.move_bishop(selected_piece)
         return legal_moves
 
     def bB(self,selected_piece):
-        legal_moves = self.bishop_move(selected_piece)
+        legal_moves = self.move_bishop(selected_piece)
         return legal_moves
     
-    def bishop_move(self,selected_piece):
+    def move_bishop(self,selected_piece):
         """
             Bishop move logic:
                 1. Bishops can move in any diagonal, on the colour they are on.
         """
         legal_moves = []
 
-        range_logic = [(1,8,1),(1,8,-1)]
+        range_sets = [(1,8,1),(1,8,-1)]
         # Diagonal logic needs to be split in 2 - this is the loop for x+y increasing/decreasing
-        for r_set in range_logic:
+        for r_set in range_sets:
             for i in range(r_set[0],r_set[1]):
                 new_x = selected_piece[1] + (i*r_set[2])
                 new_y = selected_piece[2] + (i*r_set[2])
@@ -123,7 +123,7 @@ class GameState():
                         legal_moves.append((new_x,new_y))
 
         # This is the loop for x increasing/ y decreasing and vice versa
-        for r_set in range_logic:
+        for r_set in range_sets:
             for i in range(r_set[0],r_set[1]):
                 new_x = selected_piece[1] + (i*r_set[2])
                 new_y = selected_piece[2] - (i*r_set[2])
@@ -134,5 +134,49 @@ class GameState():
                         break
                     else:
                         legal_moves.append((new_x,new_y))
+
+        return legal_moves
+    
+    def wR(self,selected_piece):
+        legal_moves = self.move_rook(selected_piece)
+        return legal_moves
+
+    def bR(self,selected_piece):
+        legal_moves = self.move_rook(selected_piece)
+        return legal_moves
+
+    def move_rook(self,selected_piece):
+        """
+            Rooks can only move in straight lines, horizontally or vertically
+        """
+        legal_moves = []
+        range_sets = [(1,8,1),(1,8,-1)]
+        for r_set in range_sets:
+            x_blocked = False
+            y_blocked = False
+            for i in range(r_set[0],r_set[1]):
+                # Logic to move on x axis
+                new_x = selected_piece[1] + (i*r_set[2])
+                if (-1 < new_x < 8):
+                    if self.board[selected_piece[2]][new_x] != '' and not x_blocked:
+                        if self.board[selected_piece[2]][new_x][0] != selected_piece[0][0]: # Check if colour of piece is opposing side - if so then legal square
+                            legal_moves.append((new_x,selected_piece[2]))
+                        x_blocked = True
+                    elif x_blocked: # Rooks can't move over pieces - if blocked then it can't move anymore in that direction
+                        pass
+                    else:
+                        legal_moves.append((new_x,selected_piece[2]))
+                # Logic to move on y axis
+                new_y = selected_piece[2] + (i*r_set[2])
+                if (-1 < new_y < 8):
+                    if self.board[new_y][selected_piece[1]] != '' and not y_blocked:
+                        if self.board[new_y][selected_piece[1]][0] != selected_piece[0][0]: # Check if colour of piece is opposing side - if so then legal square
+                            
+                            legal_moves.append((selected_piece[1],new_y))
+                        y_blocked = True
+                    elif y_blocked: # Rooks can't move over pieces - if blocked then it can't move anymore in that direction
+                        pass
+                    else:
+                        legal_moves.append((selected_piece[1],new_y))
 
         return legal_moves
