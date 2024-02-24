@@ -180,3 +180,19 @@ class GameState():
                         legal_moves.append((selected_piece[1],new_y))
 
         return legal_moves
+    
+    def wQ(self,selected_piece):
+        legal_moves = self.move_queen(selected_piece)
+        return legal_moves
+
+    def bQ(self,selected_piece):
+        legal_moves = self.move_queen(selected_piece)
+        return legal_moves
+
+    def move_queen(self,selected_piece):
+        """
+            Queens can move in straight lines, like rooks, and diagonally, like bishops
+        """
+        legal_moves = self.move_bishop(selected_piece)
+        legal_moves += self.move_rook(selected_piece)
+        return legal_moves
