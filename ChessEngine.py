@@ -196,3 +196,33 @@ class GameState():
         legal_moves = self.move_bishop(selected_piece)
         legal_moves += self.move_rook(selected_piece)
         return legal_moves
+
+    def wK(self,selected_piece):
+        legal_moves = self.move_king(selected_piece)
+        return legal_moves
+
+    def bK(self,selected_piece):
+        legal_moves = self.move_king(selected_piece)
+        return legal_moves
+
+    def move_king(self,selected_piece):
+        """
+            A king has the following move logic:
+                - Move 1 square in any direction assuming unoccupied
+                    - The square must not be underthreat by an enemy piece
+        """
+        legal_moves = []
+        move_sets = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
+        for move in move_sets:
+            new_x = selected_piece[1] + move[0]
+            new_y = selected_piece[2] + move[1]
+            if (-1 < new_x < 8) and (-1 < new_y < 8):
+                if self.board[new_y][new_x] == '':
+                    legal_moves.append((new_x,new_y))
+                elif self.board[new_y][new_x][0] != selected_piece[0][0]:
+                    legal_moves.append((new_x,new_y))
+                    
+        return legal_moves
+    
+    def determine_check(legal_mvoes):
+        pass
