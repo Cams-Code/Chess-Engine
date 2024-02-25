@@ -74,7 +74,11 @@ def main():
                 if selected_piece[0]:
                     # Move calculations are labelled the same as pieces (e.g. wP move logic is function wP)
                     func_name = getattr(gs, selected_piece[0])
-                    legal_squares = func_name(selected_piece)
+                    # Different logic for if a piece is a king as need to remove squares that make the king in check
+                    if selected_piece[0][1] == 'K':
+                        legal_squares = func_name(selected_piece,check=False)
+                    else:
+                        legal_squares = func_name(selected_piece)
                 else:
                     legal_squares = []
                 # format_legal_squares(screen,legal_squares)

@@ -23,17 +23,17 @@ class GameState():
         self.whiteToMove = True
         self.moveLog = []
 
-    def wP(self,selected_piece):
+    def wP(self,selected_piece, check_check=False):
         mult = -1
-        legal_moves = self.move_pawn(selected_piece,mult)
+        legal_moves = self.move_pawn(selected_piece,mult,check_check)
         return legal_moves
         
-    def bP(self,selected_piece):
+    def bP(self,selected_piece, check_check=False):
         mult = 1
-        legal_moves = self.move_pawn(selected_piece,mult)
+        legal_moves = self.move_pawn(selected_piece,mult,check_check)
         return legal_moves
     
-    def move_pawn(self,selected_piece:tuple,mult:int):
+    def move_pawn(self,selected_piece:tuple,mult:int, check_check=False):
         """
         Pawn move logic:
             1. Move one square forward if vacant
@@ -47,22 +47,24 @@ class GameState():
         -- selected piece: tuple. contained the piece name, and x/y co-ords
         -- mult: int. contains a multiplier for which way the pawn should move. 
             i.e. white pawn the y co-ord decreases whereas black pawn it increases
+        -- check_check: bool. Used to check if getting moves to remove from king's legal_moves
         """
         legal_moves = []
         # Implementation of point 1
-        if not self.board[selected_piece[2]+(1*mult)][selected_piece[1]]:
+        if not self.board[selected_piece[2]+(1*mult)][selected_piece[1]] and not check_check:
             legal_moves.append((selected_piece[1], selected_piece[2]+(1*mult)))
         # Implementation of point 2
-        if (selected_piece[0][0] == 'b' and selected_piece[2] == 1) or (selected_piece[0][0] == 'w' and selected_piece[2] == 6):
+        if ((selected_piece[0][0] == 'b' and selected_piece[2] == 1) or (selected_piece[0][0] == 'w' and selected_piece[2] == 6)) and not check_check:
             if not self.board[selected_piece[2]+(2*mult)][selected_piece[1]]:
                 legal_moves.append((selected_piece[1], selected_piece[2]+(2*mult)))
 
         # Implementation of point 3
         diagonals = [[selected_piece[1]-1,selected_piece[2]+(1*mult)],[selected_piece[1]+1,selected_piece[2]+(1*mult)]]
         for diag in diagonals:
-            piece = self.board[diag[1]][diag[0]]
-            if piece and piece[0] != selected_piece[0][0]:
-                legal_moves.append((diag[0],diag[1]))
+            if (-1 < diag[1] < 8) and (-1 < diag[0] < 8):
+                piece = self.board[diag[1]][diag[0]]
+                if (piece and piece[0] != selected_piece[0][0]) or check_check:
+                    legal_moves.append((diag[0],diag[1]))
 
         return legal_moves
 
@@ -197,12 +199,20 @@ class GameState():
         legal_moves += self.move_rook(selected_piece)
         return legal_moves
 
-    def wK(self,selected_piece):
+    def wK(self,selected_piece,check=True):
         legal_moves = self.move_king(selected_piece)
+        if not check:
+            all_moves = self.check_king_moves(selected_piece[0][0])
+            legal_moves = [move for move in legal_moves if move not in all_moves]
+
         return legal_moves
 
-    def bK(self,selected_piece):
+    def bK(self,selected_piece,check=True):
         legal_moves = self.move_king(selected_piece)
+        if not check:
+            all_moves = self.check_king_moves(selected_piece[0][0])
+            legal_moves = [move for move in legal_moves if move not in all_moves]
+
         return legal_moves
 
     def move_king(self,selected_piece):
@@ -224,5 +234,23 @@ class GameState():
                     
         return legal_moves
     
+    def check_king_moves(self,piece):
+        """
+            This function gets all legal moves for all opposing team pieces
+             and removes them from the list of legal_moves for the king.
+        """
+        legal_moves = []
+        for y,col in enumerate(self.board):
+            for x,row in enumerate(col):
+                # Check square is occupied and that 
+                if row and row[0] != piece:
+                    func = getattr(GameState(), row)
+                    selected_piece = (row, x, y)
+                    if row[1] == 'P': # We only want to return the diagonal legal_moves for pawns as they can only take on the diagonal.
+                        legal_moves += func(selected_piece,check_check=True)
+                    else:
+                        legal_moves += func(selected_piece)
+        return legal_moves
+
     def determine_check(legal_mvoes):
         pass
