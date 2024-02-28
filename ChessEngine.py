@@ -25,12 +25,70 @@ class GameState():
         self.moveIndex = -1
 
     def update_moveLog(self,old,new):
+        """
+            Converts x,y vector to StockFish move format. e.g. a2a4 and adds it to move log
+        """
         old_x = chr(ord('`')+old[0]+1)
         old_y = (old[1]*-1)+8
         new_x = chr(ord('`')+new[0]+1)
         new_y = (new[1]*-1)+8
         move_str = f'{old_x}{old_y}{new_x}{new_y}'
+        if self.board[new[1]][new[0]] != '':
+            piece = self.board[new[1]][new[0]]
+            move_str += f"_{piece}"
+        else:
+            piece = ''
+        ### Remove all elements in the list after current move
+        ### Can cause issues with undo/redo moves etc
+        
+        self.moveLog = self.moveLog[:self.moveIndex+1]
+        
         self.moveLog.append(move_str)
+        self.moveIndex += 1
+
+    def undoMove(self):
+        """
+            Used to go back in the moveLog and retrace steps
+        """
+        if self.moveIndex < 0:
+            pass
+        else:
+            move = self.moveLog[self.moveIndex]
+            self.moveIndex -= 1
+            ### Converts StockFish move format to x,y vector
+            old_x = ord(move[2]) - 97
+            old_y = int(move[3])*-1+8
+            new_x = ord(move[0]) - 97
+            new_y = int(move[1])*-1+8
+            self.board[new_y][new_x] = self.board[old_y][old_x]
+            if self.board[old_y][old_x]:
+                try:
+                    piece = move.split('_')[1]
+                except IndexError:
+                    piece = ''
+            else:
+                piece = ''
+            self.board[old_y][old_x] = piece
+
+    def redoMove(self):
+        """
+            Used to redo moves in the moveLog
+        """
+        moveIndex = self.moveIndex + 1
+
+        try:
+            move = self.moveLog[moveIndex]
+            self.moveIndex += 1
+            ### Converts StockFish move format to x,y vector
+            new_x = ord(move[2]) - 97
+            new_y = int(move[3])*-1+8
+            old_x = ord(move[0]) - 97
+            old_y = int(move[1])*-1+8
+            self.board[new_y][new_x] = self.board[old_y][old_x]
+            self.board[old_y][old_x] = ''
+        except IndexError:
+            pass # No moves to redo as moveIndex is the last element of the list
+
 
     def wP(self,selected_piece, check_check=False):
         mult = -1

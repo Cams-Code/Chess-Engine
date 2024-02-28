@@ -106,6 +106,12 @@ def main():
                 selected_piece = None
                 drop_pos = None
 
+            if event.type == p.KEYDOWN:
+                if event.key == p.K_LEFT:
+                    gs.undoMove()
+                if event.key == p.K_RIGHT:
+                    gs.redoMove()
+
         drawGameState(screen, gs,legal_squares)
         drop_pos = drag(screen, gs.board, selected_piece)
         clock.tick(MAX_FPS)
