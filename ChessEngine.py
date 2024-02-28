@@ -22,6 +22,15 @@ class GameState():
         ]
         self.whiteToMove = True
         self.moveLog = []
+        self.moveIndex = -1
+
+    def update_moveLog(self,old,new):
+        old_x = chr(ord('`')+old[0]+1)
+        old_y = (old[1]*-1)+8
+        new_x = chr(ord('`')+new[0]+1)
+        new_y = (new[1]*-1)+8
+        move_str = f'{old_x}{old_y}{new_x}{new_y}'
+        self.moveLog.append(move_str)
 
     def wP(self,selected_piece, check_check=False):
         mult = -1
@@ -251,6 +260,3 @@ class GameState():
                     else:
                         legal_moves += func(selected_piece)
         return legal_moves
-
-    def determine_check(legal_mvoes):
-        pass

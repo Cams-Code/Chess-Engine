@@ -12,7 +12,7 @@ CIRC_OFFSET = SQ_SIZE / 2
 CIRC_RADIUS = 12.5
 OCC_CIRC_RADIUS = 32
 OCC_CIRC_INNER_RADIUS = 25
-MAX_FPS = 120 # Use for animations later on
+MAX_FPS = 60 # Use for animations later on
 IMAGES = {}
 
 """
@@ -67,6 +67,7 @@ def main():
             if event.type ==  p.MOUSEBUTTONDOWN:
                 selected_piece = piece, x, y
                 if selected_piece[0]:
+                    lastPiece = selected_piece[0]
                     # Move calculations are labelled the same as pieces (e.g. wP move logic is function wP)
                     func_name = getattr(gs, selected_piece[0])
                     # Different logic for if a piece is a king as need to remove squares that make the king in check
@@ -74,23 +75,28 @@ def main():
                         legal_squares = func_name(selected_piece,check=False)
                     else:
                         legal_squares = func_name(selected_piece)
+                    
+                    gs.board[y][x] = ''
                 else:
                     legal_squares = []
 
                 if not drop_pos:
                     og_x, og_y = x, y
-                gs.board[y][x] = ''
+
             if event.type == p.MOUSEBUTTONUP:
                 if drop_pos:
                     # Unable to move to that position as not in chessboard
-                    if drop_pos[0]==None or drop_pos not in legal_squares:
-                        gs.board[og_y][og_x] = selected_piece[0]
+                    if (drop_pos[0]==None) or (drop_pos not in legal_squares) or (og_x == x and og_y == y):
+
+                        gs.board[og_y][og_x] = lastPiece
                         selected_piece = None
                         drop_pos = None
-                        
-                    else:
-                        # Remove piece from old position on board once moved
 
+                    else:
+                        # Add move to log
+                        gs.update_moveLog(old=(og_x,og_y),new=(x,y))
+
+                        # Remove piece from old position on board once moved
                         piece, old_x, old_y = selected_piece
                         gs.board[old_y][old_x] = ''
                         new_x, new_y = drop_pos
