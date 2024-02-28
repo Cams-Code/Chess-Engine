@@ -8,9 +8,10 @@ import ChessEngine
 WIDTH = HEIGHT = 512
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
-CIRC_RADIUS = 15
-OCC_CIRC_RADIUS = 25
-OCC_CIRC_WIDTH = 5
+CIRC_OFFSET = SQ_SIZE / 2
+CIRC_RADIUS = 12.5
+OCC_CIRC_RADIUS = 32
+OCC_CIRC_INNER_RADIUS = 25
 MAX_FPS = 120 # Use for animations later on
 IMAGES = {}
 
@@ -45,12 +46,6 @@ def drag(screen, board, selected_piece):
         screen.blit(s1, s1.get_rect(center=pos))
         return (x, y)
 
-def format_legal_squares(screen,legal_moves):
-    for move_set in legal_moves:
-        x,y = move_set[0],move_set[1]
-        p.draw.circle(screen, (200,0,0), (x*SQ_SIZE, y*SQ_SIZE), CIRC_RADIUS)
-        p.display.update()
-
 def main():
     p.init()
     screen = p.display.set_mode([HEIGHT,WIDTH])
@@ -81,7 +76,7 @@ def main():
                         legal_squares = func_name(selected_piece)
                 else:
                     legal_squares = []
-                # format_legal_squares(screen,legal_squares)
+
                 if not drop_pos:
                     og_x, og_y = x, y
                 gs.board[y][x] = ''
@@ -100,32 +95,42 @@ def main():
                         gs.board[old_y][old_x] = ''
                         new_x, new_y = drop_pos
                         gs.board[new_y][new_x] = piece
+                        legal_squares = []
                         
-                legal_squares = []
                 selected_piece = None
                 drop_pos = None
 
-        drawGameState(screen, gs)
-        # format_legal_squares(screen,legal_squares)
+        drawGameState(screen, gs,legal_squares)
         drop_pos = drag(screen, gs.board, selected_piece)
         clock.tick(MAX_FPS)
         p.display.flip()
 
-def drawGameState(screen, gs):
-    drawBoard(screen) # draw squares on the board
+def drawGameState(screen, gs, legal_squares):
+    drawBoard(screen, legal_squares, gs.board) # draw squares on the board
     drawPieces(screen, gs.board) # draw pieces on the squares
 
 """
     Draw the squares on the board
 """
 
-def drawBoard(screen):
-    colors = [p.Color("white"), p.Color("gray")]
+def drawBoard(screen,legal_squares, board):
+    colours = [(235,236,208), (115,149,82)]
+    legal_colours = [(202,203,179),(99,128,70)]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
-            color = colors[((r+c) % 2)]
-            p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+            colour = colours[((r+c) % 2)]
+            p.draw.rect(screen, colour, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
             # Note: p.Rect args are: x co-ord to begin. y co-ord to begin. size of x axis to draw. size of y axis to draw
+
+            ### Highlight the squares with circle if they are legal squares
+            if (c,r) in legal_squares:
+                circ_colour = legal_colours[((r+c) % 2)]
+                if board[r][c]: # occupied square
+                    p.draw.circle(screen, circ_colour, (c*SQ_SIZE+CIRC_OFFSET, r*SQ_SIZE+CIRC_OFFSET), OCC_CIRC_RADIUS)
+                    p.draw.circle(screen, colour, (c*SQ_SIZE+CIRC_OFFSET, r*SQ_SIZE+CIRC_OFFSET), OCC_CIRC_INNER_RADIUS)
+                else: # empty square
+                    p.draw.circle(screen, circ_colour, (c*SQ_SIZE+CIRC_OFFSET, r*SQ_SIZE+CIRC_OFFSET), CIRC_RADIUS)
+            
 
 """
     Draw the pieces on the board using current GameState
