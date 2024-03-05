@@ -122,7 +122,7 @@ class GameState():
             legal_moves.append((selected_piece[1], selected_piece[2]+(1*mult)))
         # Implementation of point 2
         if ((selected_piece[0][0] == 'b' and selected_piece[2] == 1) or (selected_piece[0][0] == 'w' and selected_piece[2] == 6)) and not check_check:
-            if not self.board[selected_piece[2]+(2*mult)][selected_piece[1]]:
+            if not self.board[selected_piece[2]+(2*mult)][selected_piece[1]] and not self.board[selected_piece[2]+(1*mult)][selected_piece[1]]:
                 legal_moves.append((selected_piece[1], selected_piece[2]+(2*mult)))
 
         # Implementation of point 3
@@ -311,7 +311,7 @@ class GameState():
             for x,row in enumerate(col):
                 # Check square is occupied and that 
                 if row and row[0] != piece:
-                    func = getattr(GameState(), row)
+                    func = getattr(self, row)
                     selected_piece = (row, x, y)
                     if row[1] == 'P': # We only want to return the diagonal legal_moves for pawns as they can only take on the diagonal.
                         legal_moves += func(selected_piece,check_check=True)
