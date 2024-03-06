@@ -133,6 +133,33 @@ class GameState():
                 if (piece and piece[0] != selected_piece[0][0]) or check_check:
                     legal_moves.append((diag[0],diag[1]))
 
+        # Implementation of point 4
+        if ((selected_piece[0][0] == 'b' and selected_piece[2] == 4) or (selected_piece[0][0] == 'w' and selected_piece[2] == 3)) and not check_check:
+            print("here")
+            legal_moves.append(self.en_passant(selected_piece,mult))
+
+        return legal_moves
+
+    def en_passant(self, selected_piece,mult):
+        """
+            En passant is a special move that gives pawns the option to capture a pawn which has just passed it.
+        """
+        # Calculate the moveLog values to check if last move was pawn passing
+        old_left_x = new_left_x = chr(ord('`')+selected_piece[1])
+        old_right_x = new_right_x = chr(ord('`')+selected_piece[1]+2)
+
+        new_left_y = (selected_piece[2]*-1)+8
+        left_y_var = 2 if selected_piece[0][0] == 'w' else -2
+        old_left_y = new_left_y + left_y_var
+        new_right_y = (selected_piece[2]*-1)+8
+        right_y_var = 2 if selected_piece[0][0] == 'w' else -2
+        old_right_y = new_right_y + right_y_var
+
+        legal_moves = ()
+        if self.moveLog[-1] == f"{old_left_x}{old_left_y}{new_left_x}{new_left_y}":
+            legal_moves = (selected_piece[1]-1,selected_piece[2]+(1*mult))
+        elif self.moveLog[-1] == f"{old_right_x}{old_right_y}{new_right_x}{new_right_y}":
+            legal_moves = (selected_piece[1]+1,selected_piece[2]+(1*mult))
         return legal_moves
 
     def wN(self,selected_piece):
@@ -306,6 +333,7 @@ class GameState():
             This function gets all legal moves for all opposing team pieces
              and removes them from the list of legal_moves for the king.
         """
+        colour_map = {'w':-1,'b':1}
         legal_moves = []
         for y,col in enumerate(self.board):
             for x,row in enumerate(col):
@@ -314,7 +342,7 @@ class GameState():
                     func = getattr(self, row)
                     selected_piece = (row, x, y)
                     if row[1] == 'P': # We only want to return the diagonal legal_moves for pawns as they can only take on the diagonal.
-                        legal_moves += func(selected_piece,check_check=True)
+                        legal_moves += func(selected_piece,check_check=True,mult=colour_map[row[0]])
                     else:
                         legal_moves += func(selected_piece)
         return legal_moves
