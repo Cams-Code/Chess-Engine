@@ -90,12 +90,12 @@ class GameState():
             pass # No moves to redo as moveIndex is the last element of the list
 
 
-    def wP(self,selected_piece, check_check=False):
+    def wP(self,selected_piece, check_check=False, mult=-1):
         mult = -1
         legal_moves = self.move_pawn(selected_piece,mult,check_check)
         return legal_moves
         
-    def bP(self,selected_piece, check_check=False):
+    def bP(self,selected_piece, check_check=False, mult=1):
         mult = 1
         legal_moves = self.move_pawn(selected_piece,mult,check_check)
         return legal_moves
@@ -135,7 +135,6 @@ class GameState():
 
         # Implementation of point 4
         if ((selected_piece[0][0] == 'b' and selected_piece[2] == 4) or (selected_piece[0][0] == 'w' and selected_piece[2] == 3)) and not check_check:
-            print("here")
             legal_moves.append(self.en_passant(selected_piece,mult))
 
         return legal_moves
@@ -346,3 +345,14 @@ class GameState():
                     else:
                         legal_moves += func(selected_piece)
         return legal_moves
+
+    def capture_ep(self,drop_pos:tuple):
+        """
+            Function for calculating the x,y co-ords of the captured piece after en-passant
+        """
+        print(drop_pos)
+        x,y = drop_pos
+        if y == 2:
+            return x, y+1
+        else:
+            return x, y-1

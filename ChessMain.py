@@ -100,8 +100,15 @@ def main():
                         piece, old_x, old_y = selected_piece
                         gs.board[old_y][old_x] = ''
                         new_x, new_y = drop_pos
+                        en_passant = True if gs.board[new_y][new_x] == '' and new_x!=old_x else False
                         gs.board[new_y][new_x] = piece
                         legal_squares = []
+                        ### Captured piece is on a different square
+
+                        if en_passant:
+                            captured_x, captured_y = gs.capture_ep(drop_pos)
+                            gs.board[captured_y][captured_x] = ''
+                            
                         
                 selected_piece = None
                 drop_pos = None
