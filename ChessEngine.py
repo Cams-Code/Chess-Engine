@@ -161,15 +161,15 @@ class GameState():
             legal_moves = (selected_piece[1]+1,selected_piece[2]+(1*mult))
         return legal_moves
 
-    def wN(self,selected_piece):
-        legal_moves = self.move_knight(selected_piece)
+    def wN(self,selected_piece,check_check=False):
+        legal_moves = self.move_knight(selected_piece,check_check)
         return legal_moves
 
-    def bN(self,selected_piece):
-        legal_moves = self.move_knight(selected_piece)
+    def bN(self,selected_piece,check_check=False):
+        legal_moves = self.move_knight(selected_piece,check_check)
         return legal_moves
     
-    def move_knight(self,selected_piece):
+    def move_knight(self,selected_piece,check_check=False):
         """
             Knights move in an L shape in all directions.
         """
@@ -181,21 +181,21 @@ class GameState():
             if (-1 < new_x < 8) and (-1 < new_y < 8):
                 piece_on_sq = self.board[new_y][new_x]
                 if piece_on_sq:
-                    if piece_on_sq[0]!=selected_piece[0][0]:
+                    if piece_on_sq[0]!=selected_piece[0][0] or check_check:
                         legal_moves.append((new_x,new_y))
                 else:
                     legal_moves.append((new_x,new_y))
         return legal_moves
 
-    def wB(self,selected_piece):
-        legal_moves = self.move_bishop(selected_piece)
+    def wB(self,selected_piece,check_check=False):
+        legal_moves = self.move_bishop(selected_piece,check_check)
         return legal_moves
 
-    def bB(self,selected_piece):
-        legal_moves = self.move_bishop(selected_piece)
+    def bB(self,selected_piece,check_check=False):
+        legal_moves = self.move_bishop(selected_piece,check_check)
         return legal_moves
     
-    def move_bishop(self,selected_piece):
+    def move_bishop(self,selected_piece,check_check=False):
         """
             Bishop move logic:
                 1. Bishops can move in any diagonal, on the colour they are on.
@@ -211,7 +211,7 @@ class GameState():
                 if (-1 < new_x < 8) and (-1 < new_y < 8):
                     # If there is a piece at the x,y then the bishop can either take, or it is blocked for the rest of that diagonal
                     if self.board[new_y][new_x] != '':
-                        if self.board[new_y][new_x][0] != selected_piece[0][0]:
+                        if self.board[new_y][new_x][0] != selected_piece[0][0] or check_check:
                             legal_moves.append((new_x,new_y))
                         break
                     else:
@@ -224,7 +224,7 @@ class GameState():
                 new_y = selected_piece[2] - (i*r_set[2])
                 if (-1 < new_x < 8) and (-1 < new_y < 8):
                     if self.board[new_y][new_x] != '':
-                        if self.board[new_y][new_x][0] != selected_piece[0][0]:
+                        if self.board[new_y][new_x][0] != selected_piece[0][0] or check_check:
                             legal_moves.append((new_x,new_y))
                         break
                     else:
@@ -232,15 +232,15 @@ class GameState():
 
         return legal_moves
     
-    def wR(self,selected_piece):
-        legal_moves = self.move_rook(selected_piece)
+    def wR(self,selected_piece,check_check=False):
+        legal_moves = self.move_rook(selected_piece,check_check)
         return legal_moves
 
-    def bR(self,selected_piece):
-        legal_moves = self.move_rook(selected_piece)
+    def bR(self,selected_piece,check_check=False):
+        legal_moves = self.move_rook(selected_piece,check_check)
         return legal_moves
 
-    def move_rook(self,selected_piece):
+    def move_rook(self,selected_piece,check_check):
         """
             Rooks can only move in straight lines, horizontally or vertically
         """
@@ -254,7 +254,7 @@ class GameState():
                 new_x = selected_piece[1] + (i*r_set[2])
                 if (-1 < new_x < 8):
                     if self.board[selected_piece[2]][new_x] != '' and not x_blocked:
-                        if self.board[selected_piece[2]][new_x][0] != selected_piece[0][0]: # Check if colour of piece is opposing side - if so then legal square
+                        if self.board[selected_piece[2]][new_x][0] != selected_piece[0][0] or check_check: # Check if colour of piece is opposing side - if so then legal square
                             legal_moves.append((new_x,selected_piece[2]))
                         x_blocked = True
                     elif x_blocked: # Rooks can't move over pieces - if blocked then it can't move anymore in that direction
@@ -265,7 +265,7 @@ class GameState():
                 new_y = selected_piece[2] + (i*r_set[2])
                 if (-1 < new_y < 8):
                     if self.board[new_y][selected_piece[1]] != '' and not y_blocked:
-                        if self.board[new_y][selected_piece[1]][0] != selected_piece[0][0]: # Check if colour of piece is opposing side - if so then legal square
+                        if self.board[new_y][selected_piece[1]][0] != selected_piece[0][0] or check_check: # Check if colour of piece is opposing side - if so then legal square
                             
                             legal_moves.append((selected_piece[1],new_y))
                         y_blocked = True
@@ -276,39 +276,39 @@ class GameState():
 
         return legal_moves
     
-    def wQ(self,selected_piece):
-        legal_moves = self.move_queen(selected_piece)
+    def wQ(self,selected_piece,check_check=False):
+        legal_moves = self.move_queen(selected_piece,check_check)
         return legal_moves
 
-    def bQ(self,selected_piece):
-        legal_moves = self.move_queen(selected_piece)
+    def bQ(self,selected_piece,check_check=False):
+        legal_moves = self.move_queen(selected_piece,check_check)
         return legal_moves
 
-    def move_queen(self,selected_piece):
+    def move_queen(self,selected_piece,check_check):
         """
             Queens can move in straight lines, like rooks, and diagonally, like bishops
         """
-        legal_moves = self.move_bishop(selected_piece)
-        legal_moves += self.move_rook(selected_piece)
+        legal_moves = self.move_bishop(selected_piece,check_check)
+        legal_moves += self.move_rook(selected_piece,check_check)
         return legal_moves
 
-    def wK(self,selected_piece,check=True):
-        legal_moves = self.move_king(selected_piece)
+    def wK(self,selected_piece,check=True,check_check=False):
+        legal_moves = self.move_king(selected_piece,check_check)
         if not check:
             all_moves = self.check_king_moves(selected_piece[0][0])
             legal_moves = [move for move in legal_moves if move not in all_moves]
 
         return legal_moves
 
-    def bK(self,selected_piece,check=True):
-        legal_moves = self.move_king(selected_piece)
+    def bK(self,selected_piece,check=True,check_check=False):
+        legal_moves = self.move_king(selected_piece,check_check)
         if not check:
             all_moves = self.check_king_moves(selected_piece[0][0])
             legal_moves = [move for move in legal_moves if move not in all_moves]
 
         return legal_moves
 
-    def move_king(self,selected_piece):
+    def move_king(self,selected_piece,check_check):
         """
             A king has the following move logic:
                 - Move 1 square in any direction assuming unoccupied
@@ -322,7 +322,7 @@ class GameState():
             if (-1 < new_x < 8) and (-1 < new_y < 8):
                 if self.board[new_y][new_x] == '':
                     legal_moves.append((new_x,new_y))
-                elif self.board[new_y][new_x][0] != selected_piece[0][0]:
+                elif self.board[new_y][new_x][0] != selected_piece[0][0] or check_check:
                     legal_moves.append((new_x,new_y))
                     
         return legal_moves
@@ -343,7 +343,7 @@ class GameState():
                     if row[1] == 'P': # We only want to return the diagonal legal_moves for pawns as they can only take on the diagonal.
                         legal_moves += func(selected_piece,check_check=True,mult=colour_map[row[0]])
                     else:
-                        legal_moves += func(selected_piece)
+                        legal_moves += func(selected_piece,check_check=True)
         return legal_moves
 
     def capture_ep(self,drop_pos:tuple):
