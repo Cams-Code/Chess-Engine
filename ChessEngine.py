@@ -414,6 +414,12 @@ class GameState():
                         legal_moves[(x,y)].append(moves)
                     else:
                         legal_moves[(x,y)] = moves
+        if piece == 'w':
+            if board == self.board:
+                self.allBlackLegal = legal_moves
+        else:
+            if board == self.board:
+                self.allWhiteLegal = legal_moves
         return legal_moves
 
     def capture_ep(self,drop_pos:tuple):
