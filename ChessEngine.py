@@ -4,6 +4,7 @@
 """
 import numpy as np
 from copy import deepcopy
+from pprint import pprint
 
 class GameState():
 
@@ -147,7 +148,9 @@ class GameState():
 
         # Implementation of point 4
         if ((selected_piece[0][0] == 'b' and selected_piece[2] == 4) or (selected_piece[0][0] == 'w' and selected_piece[2] == 3)) and not check_check:
-            legal_moves.append(self.en_passant(selected_piece,mult))
+            en_passant = self.en_passant(selected_piece,mult)
+            if en_passant:
+                legal_moves.append(en_passant)
 
         return legal_moves
 
@@ -166,7 +169,7 @@ class GameState():
         right_y_var = 2 if selected_piece[0][0] == 'w' else -2
         old_right_y = new_right_y + right_y_var
 
-        legal_moves = ()
+        legal_moves = []
         if self.moveLog[-1] == f"{old_left_x}{old_left_y}{new_left_x}{new_left_y}":
             legal_moves = (selected_piece[1]-1,selected_piece[2]+(1*mult))
         elif self.moveLog[-1] == f"{old_right_x}{old_right_y}{new_right_x}{new_right_y}":
