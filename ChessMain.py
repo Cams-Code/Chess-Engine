@@ -93,7 +93,7 @@ def main():
                         ### For each legal square, make sure that it doesn't put the player in check
                         legal_squares_dict = {}
                         legal_squares_dict[(x, y)] = legal_squares
-                        opp_colour = 'w' if piece[0] == 'b' else 'w'
+                        opp_colour = 'w' if piece[0] == 'b' else 'b'
                         safe_squares = gs.testCheckMoves(legal_squares_dict,colour=opp_colour)
                         if not safe_squares:
                             legal_squares = []
