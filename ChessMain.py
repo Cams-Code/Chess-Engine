@@ -4,6 +4,7 @@
 
 import pygame as p
 import ChessEngine
+import time
 
 WIDTH = HEIGHT = 768
 DIMENSION = 8
@@ -66,19 +67,34 @@ def main():
                 running = False
             if event.type ==  p.MOUSEBUTTONDOWN:
                 selected_piece = piece, x, y
-                if selected_piece[0]:
+                if selected_piece[0] and ((selected_piece[0][0] == 'w' and gs.whiteToMove) or (selected_piece[0][0] == 'b' and not gs.whiteToMove)):
+
                     lastPiece = selected_piece[0]
                     # Move calculations are labelled the same as pieces (e.g. wP move logic is function wP)
                     func_name = getattr(gs, selected_piece[0])
                     # Different logic for if a piece is a king as need to remove squares that make the king in check
                     if selected_piece[0][1] == 'K':
-                        legal_squares = func_name(selected_piece,check=False)
+                        legal_squares = func_name(selected_piece,check=False,board=gs.board)
                     else:
-                        legal_squares = func_name(selected_piece)
-                    
+                        legal_squares = func_name(selected_piece,board=gs.board)
+
+                    if ((piece[0] == 'w' and gs.whiteCheck) or (piece[0] == 'b' and gs.blackCheck)):
+                        if gs.checkMate:
+                            print("Checkmate.")
+                            legal_squares = []
+                        else:
+
+                            ### Only return legal squares for piece if it is in legalMovesInCheck list
+                            if (x, y) in gs.legalMovesInCheck.keys():
+                                legal_squares = list(set(legal_squares) & set(gs.legalMovesInCheck[(x, y)]))
+                            else:
+                                legal_squares = []
+
                     gs.board[y][x] = ''
                 else:
                     legal_squares = []
+                    lastPiece = piece
+                    selected_piece = ''
 
                 if not drop_pos:
                     og_x, og_y = x, y
@@ -100,7 +116,7 @@ def main():
                         piece, old_x, old_y = selected_piece
                         gs.board[old_y][old_x] = ''
                         new_x, new_y = drop_pos
-                        en_passant = True if gs.board[new_y][new_x] == '' and new_x!=old_x else False
+                        en_passant = True if gs.board[new_y][new_x] == '' and new_x!=old_x and piece[1]=='P' else False
                         gs.board[new_y][new_x] = piece
                         legal_squares = []
                         ### Captured piece is on a different square
@@ -109,7 +125,14 @@ def main():
                             captured_x, captured_y = gs.capture_ep(drop_pos)
                             gs.board[captured_y][captured_x] = ''
                             
-                        
+                        ## Calculate if in check - attackingPieces has a list of piece,x,y coords of all pieces getting player in check
+                        colour = piece[0]
+                        attackingPieces = gs.check_if_check(colour)
+                        if attackingPieces:
+                            gs.checkLegalMoves(attackingPieces,colour)
+
+                        gs.whiteToMove = not gs.whiteToMove
+
                 selected_piece = None
                 drop_pos = None
 
