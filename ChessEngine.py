@@ -29,6 +29,8 @@ class GameState():
         self.blackCheck = False
         self.legalMovesInCheck = []
         self.checkMate = False
+        self.whiteCastle = True
+        self.blackCastle = True
 
     def update_moveLog(self,old,new):
         """
@@ -301,21 +303,13 @@ class GameState():
     def wK(self,selected_piece,board,check=True,check_check=False):
         legal_moves = self.move_king(selected_piece,board,check_check)
         if not check:
-            all_moves_dict = self.check_all_moves(selected_piece[0][0],board=board)
-            all_moves_list = []
-            for key in all_moves_dict:
-                all_moves_list.extend(all_moves_dict[key])
-            legal_moves = list(set(legal_moves) - set(all_moves_list))
+            legal_moves = self.filter_kingMoves(legal_moves,board,selected_piece[0][0])
         return legal_moves
 
     def bK(self,selected_piece,board,check=True,check_check=False):
         legal_moves = self.move_king(selected_piece,board,check_check)
         if not check:
-            all_moves_dict = self.check_all_moves(selected_piece[0][0],board=board)
-            all_moves_list = []
-            for key in all_moves_dict:
-                all_moves_list.extend(all_moves_dict[key])
-            legal_moves = list(set(legal_moves) - set(all_moves_list))
+            legal_moves = self.filter_kingMoves(legal_moves,board,selected_piece[0][0])
         return legal_moves
 
     def move_king(self,selected_piece,board,check_check):
@@ -337,6 +331,14 @@ class GameState():
                     
         return legal_moves
     
+    def filter_kingMoves(self,legal_moves:list, board:list,colour:str) -> list:
+        all_moves_dict = self.check_all_moves(colour,board=board)
+        all_moves_list = []
+        for key in all_moves_dict:
+            all_moves_list.extend(all_moves_dict[key])
+        legal_moves = list(set(legal_moves) - set(all_moves_list))
+        return legal_moves
+
     def check_all_moves(self,piece,board,check=False):
         """
             This function gets all legal moves for all pieces of a specific colour.
