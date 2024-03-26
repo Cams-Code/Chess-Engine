@@ -135,6 +135,31 @@ def main():
                             captured_x, captured_y = gs.capture_ep(drop_pos)
                             gs.board[captured_y][captured_x] = ''
                             
+                        ## Logic for castling.
+                        ## If king moves, no longer able to castle
+                        if piece[1] == 'K':
+                            if piece[0] == 'w':
+                                gs.whiteCastleKS = False
+                                gs.whiteCastleQS = False
+                            else:
+                                gs.blackCastleKS = False
+                                gs.blackCastleQS = False
+                            # Player is castling if abs value is 2, calling function to move rook over king
+                            if abs(new_x - old_x) == 2:
+                                gs.moveCastling(drop_pos)
+
+
+
+                        if piece[1] == 'R':
+                            castle_positions = {
+                                (7, 0): 'blackCastleKS',
+                                (0, 0): 'blackCastleQS',
+                                (7, 7): 'whiteCastleKS',
+                                (0, 7): 'whiteCastleQS',
+                            }
+                            if (old_x, old_y) in castle_positions:
+                                setattr(gs, castle_positions[(old_x, old_y)], False)
+
                         ## Calculate if in check - attackingPieces has a list of piece,x,y coords of all pieces getting player in check
                         colour = piece[0]
                         attackingPieces = gs.check_if_check(colour)

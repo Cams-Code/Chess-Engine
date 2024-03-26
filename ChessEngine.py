@@ -29,8 +29,12 @@ class GameState():
         self.blackCheck = False
         self.legalMovesInCheck = []
         self.checkMate = False
-        self.whiteCastle = True
-        self.blackCastle = True
+        self.whiteCastleKS = True
+        self.whiteCastleQS = True
+        self.blackCastleKS = True
+        self.blackCastleQS = True
+        self.allBlackLegal = []
+        self.allWhiteLegal = []
 
     def update_moveLog(self,old,new):
         """
@@ -304,6 +308,7 @@ class GameState():
         legal_moves = self.move_king(selected_piece,board,check_check)
         if not check:
             legal_moves = self.filter_kingMoves(legal_moves,board,selected_piece[0][0])
+            legal_moves += self.castling(selected_piece,legal_moves)
         return legal_moves
 
     def bK(self,selected_piece,board,check=True,check_check=False):
@@ -332,12 +337,57 @@ class GameState():
         return legal_moves
     
     def filter_kingMoves(self,legal_moves:list, board:list,colour:str) -> list:
+        """
+            Removes squares from king's legal squares list that are under attack from opposing colour.
+        """
         all_moves_dict = self.check_all_moves(colour,board=board)
         all_moves_list = []
         for key in all_moves_dict:
             all_moves_list.extend(all_moves_dict[key])
         legal_moves = list(set(legal_moves) - set(all_moves_list))
         return legal_moves
+
+    def castling(self,selected_piece:tuple,legal_squares:list):
+        """
+            Logic used to determine if a colour can castle, and if yes, adds to legal_squares
+        """
+        # ks_castle = king-side castle
+        # qs_castle = queen-side castle
+        castle_sqs = []
+        opp_colour_moves = self.allBlackLegal if selected_piece[0][0] == 'w' else self.allWhiteLegal
+        king_y = selected_piece[2]
+        if (self.blackCastleKS and selected_piece[0][0] == 'b') or (self.whiteCastleKS and selected_piece[0][0] == 'w'):
+            ks_adj_x = selected_piece[1] + 1
+            if (ks_adj_x, king_y) in legal_squares:
+                ks_castle_x = selected_piece[1] + 2
+                if (ks_castle_x, king_y) not in opp_colour_moves and self.board[king_y][ks_castle_x] == '':
+                    if self.board[king_y][7] == f'{selected_piece[0][0]}R':
+                        castle_sqs.append((ks_castle_x,king_y))
+
+        if (self.blackCastleQS and selected_piece[0][0] == 'b') or (self.whiteCastleQS and selected_piece[0][0] == 'w'):
+            qs_adj_x = selected_piece[1] - 1
+            if (qs_adj_x, king_y) in legal_squares:
+                qs_castle_x = selected_piece[1] - 2
+                if (qs_castle_x, king_y) not in opp_colour_moves and self.board[king_y][qs_castle_x] == '' and self.board[king_y][qs_castle_x - 1] == '':
+                    castle_sqs.append((qs_castle_x,king_y))
+
+        return castle_sqs
+
+    def moveCastling(self,drop_pos:tuple):
+        """
+            Function to handle correctly castling
+        """
+        castle_map = {
+            (2, 0): {'rook_old':(0, 0),'rook_new':(3, 0)},
+            (6, 0): {'rook_old':(7, 0),'rook_new':(5, 0)},
+            (2, 7): {'rook_old':(0, 7),'rook_new':(3, 7)},
+            (6, 7): {'rook_old':(7, 7),'rook_new':(5, 7)}, 
+        }
+        colour = 'b' if drop_pos[0] == 0 else 'w'
+        rook_old_x, rook_old_y = castle_map[drop_pos]['rook_old']
+        rook_new_x, rook_new_y = castle_map[drop_pos]['rook_new']
+        self.board[rook_new_y][rook_new_x] = f'{colour}R'
+        self.board[rook_old_y][rook_old_x] = ''
 
     def check_all_moves(self,piece,board,check=False):
         """
