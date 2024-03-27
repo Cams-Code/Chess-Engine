@@ -131,8 +131,11 @@ class GameState():
         """
         legal_moves = []
         # Implementation of point 1
-        if not board[selected_piece[2]+(1*mult)][selected_piece[1]] and not check_check:
-            legal_moves.append((selected_piece[1], selected_piece[2]+(1*mult)))
+        try:
+            if not board[selected_piece[2]+(1*mult)][selected_piece[1]] and not check_check:
+                legal_moves.append((selected_piece[1], selected_piece[2]+(1*mult)))
+        except IndexError:
+            pass
         # Implementation of point 2
         if ((selected_piece[0][0] == 'b' and selected_piece[2] == 1) or (selected_piece[0][0] == 'w' and selected_piece[2] == 6)) and not check_check:
             if not board[selected_piece[2]+(2*mult)][selected_piece[1]] and not self.board[selected_piece[2]+(1*mult)][selected_piece[1]]:

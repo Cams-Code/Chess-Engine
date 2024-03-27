@@ -15,6 +15,7 @@ OCC_CIRC_RADIUS = SQ_SIZE / 2
 OCC_CIRC_INNER_RADIUS = round(OCC_CIRC_RADIUS * 0.78)
 MAX_FPS = 60 # Use for animations later on
 IMAGES = {}
+PROMOTION_SQ_SIZE = SQ_SIZE
 
 """
 Initialise global dictionary of images.
@@ -59,13 +60,17 @@ def main():
     selected_piece = None
     drop_pos = None
     running = True
+    promotion_select = False
+    promotion_x = ''
+    promotion_y = ''
+    promotion_clr = ''
     legal_squares = []
     while running:
         piece, x, y = get_square_under_mouse(gs.board)
         for event in p.event.get():
             if event.type == p.QUIT:
                 running = False
-            if event.type ==  p.MOUSEBUTTONDOWN:
+            if event.type ==  p.MOUSEBUTTONDOWN and not promotion_select:
                 selected_piece = piece, x, y
                 if selected_piece[0] and ((selected_piece[0][0] == 'w' and gs.whiteToMove) or (selected_piece[0][0] == 'b' and not gs.whiteToMove)):
 
@@ -110,7 +115,30 @@ def main():
                     og_x, og_y = x, y
 
             if event.type == p.MOUSEBUTTONUP:
-                if drop_pos:
+                if promotion_select:
+                    y_difference = abs(y - promotion_y)
+                    if promotion_x == x and y_difference < 4:
+                        piece_map = {
+                            0: 'Q',
+                            1: 'R',
+                            2: 'B',
+                            3: 'N'
+                        }
+                        new_piece = piece_map[y_difference]
+                        gs.board[promotion_y][promotion_x] = f"{promotion_clr}{new_piece}"
+
+                        promotion_select = False
+                        promotion_x = ''
+                        promotion_y = ''
+                        promotion_clr = ''
+
+                        ## Calculate if in check - attackingPieces has a list of piece,x,y coords of all pieces getting player in check
+                        colour = piece[0]
+                        attackingPieces = gs.check_if_check(colour)
+                        if attackingPieces:
+                            gs.checkLegalMoves(attackingPieces,colour)
+
+                elif drop_pos:
                     # Unable to move to that position as not in chessboard
                     if (drop_pos[0]==None) or (drop_pos not in legal_squares) or (og_x == x and og_y == y):
 
@@ -148,8 +176,7 @@ def main():
                             if abs(new_x - old_x) == 2:
                                 gs.moveCastling(drop_pos)
 
-
-
+                        ## Logic for removing ability to check if rook moves
                         if piece[1] == 'R':
                             castle_positions = {
                                 (7, 0): 'blackCastleKS',
@@ -159,6 +186,13 @@ def main():
                             }
                             if (old_x, old_y) in castle_positions:
                                 setattr(gs, castle_positions[(old_x, old_y)], False)
+
+                        ## Logic for promoting a pawn when it reaches the end of the board
+                        if piece[1] == 'P' and new_y in [0, 7]:
+                            promotion_select = True
+                            promotion_x = new_x
+                            promotion_y = new_y
+                            promotion_clr = piece[0]
 
                         ## Calculate if in check - attackingPieces has a list of piece,x,y coords of all pieces getting player in check
                         colour = piece[0]
@@ -177,14 +211,16 @@ def main():
                 if event.key == p.K_RIGHT:
                     gs.redoMove()
 
-        drawGameState(screen, gs,legal_squares)
+        drawGameState(screen, gs,legal_squares,promotion_select,promotion_x,promotion_y)
         drop_pos = drag(screen, gs.board, selected_piece)
         clock.tick(MAX_FPS)
         p.display.flip()
 
-def drawGameState(screen, gs, legal_squares):
+def drawGameState(screen, gs, legal_squares,promotion_select,promotion_x,promotion_y):
     drawBoard(screen, legal_squares, gs.board) # draw squares on the board
     drawPieces(screen, gs.board) # draw pieces on the squares
+    if promotion_select:
+        drawPromotion(screen,(promotion_x,promotion_y))
 
 """
     Draw the squares on the board
@@ -219,6 +255,23 @@ def drawPieces(screen, board):
             piece = board[r][c]
             if piece: # Not an empty square
                 screen.blit(IMAGES[piece], p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+
+"""
+    Draw the promotion box when player is promoting a pawn
+"""
+def drawPromotion(screen,drop_pos):
+    colour = (255,255,255)
+    x, y = drop_pos
+    piece_colour = 'w' if y == 0 else 'b'
+    colour_mult = 1 if y == 0 else -1
+    piece_list = ['Q','R','B','N']
+    for c in range(4):
+        y_coord = y + (c *colour_mult)
+        p.draw.rect(screen, colour, p.Rect(x*PROMOTION_SQ_SIZE-1,y_coord*PROMOTION_SQ_SIZE,PROMOTION_SQ_SIZE+2,PROMOTION_SQ_SIZE))
+        piece = f"{piece_colour}{piece_list[c]}"
+        screen.blit(IMAGES[piece], p.Rect(x*PROMOTION_SQ_SIZE-1,y_coord*PROMOTION_SQ_SIZE,PROMOTION_SQ_SIZE+2,PROMOTION_SQ_SIZE))
+        
+    return True
 
 if __name__ == '__main__':
     main()
