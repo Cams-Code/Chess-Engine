@@ -321,6 +321,7 @@ class GameState():
         legal_moves = self.move_king(selected_piece,board,check_check)
         if not check:
             legal_moves = self.filter_kingMoves(legal_moves,board,selected_piece[0][0])
+            legal_moves += self.castling(selected_piece,legal_moves)
         return legal_moves
 
     def move_king(self,selected_piece,board,check_check):
@@ -389,7 +390,7 @@ class GameState():
             (2, 7): {'rook_old':(0, 7),'rook_new':(3, 7)},
             (6, 7): {'rook_old':(7, 7),'rook_new':(5, 7)}, 
         }
-        colour = 'b' if drop_pos[0] == 0 else 'w'
+        colour = 'b' if drop_pos[1] == 0 else 'w'
         rook_old_x, rook_old_y = castle_map[drop_pos]['rook_old']
         rook_new_x, rook_new_y = castle_map[drop_pos]['rook_new']
         self.board[rook_new_y][rook_new_x] = f'{colour}R'
