@@ -71,50 +71,53 @@ def main():
             if event.type == p.QUIT:
                 running = False
             if event.type ==  p.MOUSEBUTTONDOWN and not promotion_select:
-                selected_piece = piece, x, y
-                if selected_piece[0] and ((selected_piece[0][0] == 'w' and gs.whiteToMove) or (selected_piece[0][0] == 'b' and not gs.whiteToMove)):
+                if event.button == 3:
+                    pass
+                elif event.button == 1:
+                    selected_piece = piece, x, y
+                    if selected_piece[0] and ((selected_piece[0][0] == 'w' and gs.whiteToMove) or (selected_piece[0][0] == 'b' and not gs.whiteToMove)):
 
-                    lastPiece = selected_piece[0]
-                    # Move calculations are labelled the same as pieces (e.g. wP move logic is function wP)
-                    func_name = getattr(gs, selected_piece[0])
-                    # Different logic for if a piece is a king as need to remove squares that make the king in check
-                    if selected_piece[0][1] == 'K':
-                        legal_squares = func_name(selected_piece,check=False,board=gs.board)
-                    else:
-                        legal_squares = func_name(selected_piece,board=gs.board)
-
-                    if ((piece[0] == 'w' and gs.whiteCheck) or (piece[0] == 'b' and gs.blackCheck)):
-                        if gs.checkMate:
-                            print("Checkmate.")
-                            legal_squares = []
+                        lastPiece = selected_piece[0]
+                        # Move calculations are labelled the same as pieces (e.g. wP move logic is function wP)
+                        func_name = getattr(gs, selected_piece[0])
+                        # Different logic for if a piece is a king as need to remove squares that make the king in check
+                        if selected_piece[0][1] == 'K':
+                            legal_squares = func_name(selected_piece,check=False,board=gs.board)
                         else:
+                            legal_squares = func_name(selected_piece,board=gs.board)
 
-                            ### Only return legal squares for piece if it is in legalMovesInCheck list
-                            if (x, y) in gs.legalMovesInCheck.keys():
-                                legal_squares = list(set(legal_squares) & set(gs.legalMovesInCheck[(x, y)]))
-                            else:
+                        if ((piece[0] == 'w' and gs.whiteCheck) or (piece[0] == 'b' and gs.blackCheck)):
+                            if gs.checkMate:
+                                print("Checkmate.")
                                 legal_squares = []
-                    else:
-                        ### For each legal square, make sure that it doesn't put the player in check
-                        legal_squares_dict = {}
-                        legal_squares_dict[(x, y)] = legal_squares
-                        opp_colour = 'w' if piece[0] == 'b' else 'b'
-                        safe_squares = gs.testCheckMoves(legal_squares_dict,colour=opp_colour)
-                        if not safe_squares:
-                            legal_squares = []
+                            else:
+
+                                ### Only return legal squares for piece if it is in legalMovesInCheck list
+                                if (x, y) in gs.legalMovesInCheck.keys():
+                                    legal_squares = list(set(legal_squares) & set(gs.legalMovesInCheck[(x, y)]))
+                                else:
+                                    legal_squares = []
                         else:
-                            legal_squares = list(set(safe_squares[(x, y)]) & set(legal_squares))
+                            ### For each legal square, make sure that it doesn't put the player in check
+                            legal_squares_dict = {}
+                            legal_squares_dict[(x, y)] = legal_squares
+                            opp_colour = 'w' if piece[0] == 'b' else 'b'
+                            safe_squares = gs.testCheckMoves(legal_squares_dict,colour=opp_colour)
+                            if not safe_squares:
+                                legal_squares = []
+                            else:
+                                legal_squares = list(set(safe_squares[(x, y)]) & set(legal_squares))
 
-                    gs.board[y][x] = ''
-                else:
-                    legal_squares = []
-                    lastPiece = piece
-                    selected_piece = ''
+                        gs.board[y][x] = ''
+                    else:
+                        legal_squares = []
+                        lastPiece = piece
+                        selected_piece = ''
 
-                if not drop_pos:
-                    og_x, og_y = x, y
+                    if not drop_pos:
+                        og_x, og_y = x, y
 
-            if event.type == p.MOUSEBUTTONUP:
+            if event.type == p.MOUSEBUTTONUP and event.button == 1:
                 if promotion_select:
                     y_difference = abs(y - promotion_y)
                     if promotion_x == x and y_difference < 4:
