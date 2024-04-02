@@ -594,3 +594,56 @@ class GameState():
         king_xy = list(zip(*np.where(array == king)))
         y,x = king_xy[0]
         return y,x
+
+    def create_fen(self):
+        """
+            Create FEN record for use with calculating best move
+            FEN record is in the below format:
+            1. Board
+                - Black pieces are lowercase e.g. black rook is r
+                - White pieces are capital e.g. white rook is R
+                - Empty spaces are displayed as numerical amount in a row i.e. 3 empty squares in a row is 3
+            2. player to move
+            3. castle availability
+            4. en passant square
+            5. halfmove clock - number of halfmoves since last capture or pawn advance (used for fifty move rule)
+            6. Number of full moves. Starts at 1 and incremented after black's move
+        """
+        fen = ''
+        # Board logic
+        for c in self.board:
+            blank_count = 0
+            for r in c:
+                if r:
+                    if blank_count > 0:
+                        fen += str(blank_count)
+                        blank_count = 0
+                    value = r[1].upper() if r.__contains__('w') else r[1].lower()
+                    fen += value
+                else:
+                    blank_count+= 1
+                if blank_count == 8:
+                    fen += str(blank_count)
+            if blank_count > 0 and blank_count!=8:
+                fen += str(blank_count)
+            fen += '/'
+        fen = fen.rstrip('/')
+        # player to move
+        colour_move = 'w' if self.whiteToMove else 'b'
+        fen += f" {colour_move}"
+        # castle availability
+        castle_str = ''
+        castle_fen = ['K','Q','k','q']
+        for i,castle_method in enumerate([self.whiteCastleKS,self.whiteCastleQS,self.blackCastleKS,self.blackCastleQS]):
+            if castle_method:
+                castle_str += castle_fen[i]
+        if not castle_str:
+            castle_str = '-'
+        fen += f' {castle_str}'
+        # en passant square
+        fen += ' -'
+        # halfmove clock
+        fen += ' 0'
+        # Number of full moves.
+        full_moves = str(len(self.moveLog) // 2)
+        fen += f' {full_moves}'
