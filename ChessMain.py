@@ -4,7 +4,6 @@
 
 import pygame as p
 import ChessEngine
-import time
 
 WIDTH = HEIGHT = 768
 DIMENSION = 8
@@ -65,6 +64,7 @@ def main():
     promotion_y = ''
     promotion_clr = ''
     legal_squares = []
+    gs.create_fen()
     while running:
         piece, x, y = get_square_under_mouse(gs.board)
         for event in p.event.get():
@@ -136,7 +136,7 @@ def main():
                         promotion_clr = ''
 
                         ## Calculate if in check - attackingPieces has a list of piece,x,y coords of all pieces getting player in check
-                        colour = piece[0]
+                        colour = promotion_clr
                         attackingPieces = gs.check_if_check(colour)
                         if attackingPieces:
                             gs.checkLegalMoves(attackingPieces,colour)
